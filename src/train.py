@@ -7,7 +7,10 @@ import numpy as np
 import tensorflow as tf
 import random as rn
 import os
+import tensorflow_addons as tfa
+import matplotlib.pyplot as plt
 from utils import convert_to_notes, create_sequences, custom_mse
+
 
 # Ensure Reproducibility
 SEED_VALUE = 888888
@@ -48,7 +51,7 @@ seq_ds = create_sequences(notes_ds,
                           vocab_size=VOCAB_SIZE)
 
 # Training Proper
-batch_size = 32
+batch_size = 64
 buffer_size = len(all_notes) - SEQ_LENGTH 
 train_ds = (seq_ds
             .shuffle(buffer_size)
@@ -56,9 +59,11 @@ train_ds = (seq_ds
             .cache()
             .prefetch(tf.data.experimental.AUTOTUNE))
 
+# Hyperparameters
 input_shape = (SEQ_LENGTH, 3)
-LEARNING_RATE = 4.5e-3
-
+INIT_LEARNING_RATE = 8e-3
+TL_EPSILON = 1e-10
+TL_WEIGHT_DECAY = 1e-3
 
 # Model Build
 inputs = tf.keras.Input(input_shape)
@@ -80,28 +85,38 @@ loss = {'pitch': tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
         'duration': custom_mse}
 
 # Model Compile
-opt = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+optim = tfa.optimizers.AdaBelief(learning_rate=INIT_LEARNING_RATE/8,
+                                 weight_decay=TL_WEIGHT_DECAY,
+                                 epsilon=TL_EPSILON)
+
 model.compile(loss=loss, loss_weights={'pitch': 0.05,
                                        'step': 1.0,
                                        'duration':1.0},
-                                       optimizer=opt)
+                                       optimizer=optim)
 # Define Callbacks
+# Define early stopping when loss is not improving anymore
+# Get best model = model with lowest pitch_loss
 callbacks = [
     tf.keras.callbacks.ModelCheckpoint(
-        filepath='../models/training_checkpoints/ckpt_{epoch}',
+        filepath='models/training_checkpoints/best_model.h5',
+        monitor='pitch_loss',
+        mode='min',
+        verbose=1,
         save_weights_only=True),
     tf.keras.callbacks.EarlyStopping(
         monitor='loss',
         patience=5,
-        verbose=1,
-        restore_best_weights=True),
+        verbose=1),
 ]
 
 # Training
 print("Starting Training...")
-epochs = 40
+EPOCHS = 50
 history = model.fit(
     train_ds,
-    epochs=epochs,
+    epochs=EPOCHS,
     callbacks=callbacks,
 )
+
+plt.plot(history.epoch, history.history['loss'], label='total loss')
+plt.savefig('models/training_plots/training_loss.png')
