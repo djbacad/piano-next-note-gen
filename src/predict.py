@@ -51,13 +51,13 @@ for _ in range(num_predictions):
 generated_notes = pd.DataFrame(generated_notes, columns=(*key_order, 'start', 'end'))
 print(generated_notes)
 
-# out_file = '../test/outputs/output.midi'
+out_file = '../test/outputs/output.midi'
 
-# # Get instrument name, and write the output file
-# pm = pretty_midi.PrettyMIDI(midi_path)
-# instrument = pm.instruments[0]
-# instrument_name = pretty_midi.program_to_instrument_name(instrument.program)
+# Get instrument name, and write the output file
+pm = pretty_midi.PrettyMIDI(midi_path)
+instrument = pm.instruments[0]
+instrument_name = pretty_midi.program_to_instrument_name(instrument.program)
 
-# out_pm = convert_to_midi(generated_notes, 
-#                          out_file=out_file, 
-#                          instrument_name=instrument_name)
+out_pm = convert_to_midi(generated_notes, 
+                         out_file=out_file, 
+                         instrument_name=instrument_name)
