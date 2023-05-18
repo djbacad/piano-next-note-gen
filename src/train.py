@@ -26,7 +26,7 @@ SAMPLING_RATE = 16000
 # Create the training dataset
 # The model should be able to predict the next note/s given an input midi file, 
 # and we need the midi files we have from the dataset to first be converted to notes. 
-data_dir = pathlib.Path('data/maestro-v2.0.0')
+data_dir = pathlib.Path('../data/maestro-v2.0.0')
 files = glob.glob(str(data_dir/'**/*.mid*'))
 
 limit = 5
@@ -98,11 +98,11 @@ model.compile(loss=loss, loss_weights={'pitch': 0.05,
 # Get best model = model with lowest pitch_loss
 callbacks = [
     tf.keras.callbacks.ModelCheckpoint(
-        filepath='models/training_checkpoints/best_model.h5',
+        filepath='../models/training_checkpoints/best_model.h5',
         monitor='pitch_loss',
         mode='min',
         verbose=1,
-        save_weights_only=True),
+        save_best_only=True),
     tf.keras.callbacks.EarlyStopping(
         monitor='loss',
         patience=5,
@@ -119,4 +119,4 @@ history = model.fit(
 )
 
 plt.plot(history.epoch, history.history['loss'], label='total loss')
-plt.savefig('models/training_plots/training_loss.png')
+plt.savefig('../models/training_plots/training_loss.png')
