@@ -85,7 +85,7 @@ loss = {'pitch': tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
         'duration': custom_mse}
 
 # Model Compile
-optim = tfa.optimizers.AdaBelief(learning_rate=INIT_LEARNING_RATE/8,
+optim = tfa.optimizers.AdaBelief(learning_rate=INIT_LEARNING_RATE,
                                  weight_decay=TL_WEIGHT_DECAY,
                                  epsilon=TL_EPSILON)
 
